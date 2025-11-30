@@ -43,7 +43,7 @@
 
 ### Appointments
 
-- appointment_id, visitor_id, officer_id, date, StartTime, EndTime, AddedOn, LastUpdatedOn created_at, updated_at
+- appointment_id, visitor_id, officer_id, date, StartTime, EndTime, AddedOn, LastUpdatedOn, created_at, updated_at
 
 ### Activities
 
