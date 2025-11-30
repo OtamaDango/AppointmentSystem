@@ -23,6 +23,9 @@ return new class extends Migration
             $table->timestamp('AddedOn')->useCurrent();          
             $table->timestamp('LastUpdatedOn')->nullable()->useCurrentOnUpdate();
             $table->timestamps();
+            // Foreign keys
+            $table->foreign('visitor_id')->references('visitor_id')->on('visitors')->onDelete('cascade');
+            $table->foreign('officer_id')->references('officer_id')->on('officers')->onDelete('cascade');
         });
     }
 

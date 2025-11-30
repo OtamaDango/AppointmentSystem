@@ -15,13 +15,13 @@ class Appointment extends Model
         'AddedOn',
     ];
     public function officer(){
-        return $this->belongsTo(Officer::class);
+        return $this->belongsTo(Officer::class,'officer_id','officer_id');
     }
     public function visitor(){
-        return $this->belongsTo(Visitor::class);
+        return $this->belongsTo(Visitor::class,'visitor_id','officer_id');
     }
     public function activities(){
-        return $this->hasMany(Activity::class);
+        return $this->hasOne(Activity::class,'appointment_id','appointment_id');
     }
 }
 ?>
