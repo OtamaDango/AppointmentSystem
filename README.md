@@ -29,18 +29,22 @@
    ```
 ## Database Schema
 
-### Users
+### Posts
 
-- id, name, email, password, created_at, updated_at
+- post_id, name, status, created_at, updated_at
+
+### Visitors
+
+- visitor_id, name, email, mobileno, status, created_at, updated_at
 
 ### Officers
 
-- id, name, email, phone, created_at, updated_at
+- officer_id, post_id, name, status, created_at, updated_at, WorkStartTime, WorkEndTime
 
 ### Appointments
 
-- id, user_id, officer_id, date, start_time, end_time, description, created_at, updated_at
+- appointment_id, visitor_id, officer_id, date, StartTime, EndTime, AddedOn, LastUpdatedOn created_at, updated_at
 
 ### Activities
 
-- id, appointment_id, activity, created_at, updated_at
+- activities_id, officer_id, appointment_id, type, start_date, start_time, end_time, end_date, status, created_at, updated_at
