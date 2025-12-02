@@ -22,6 +22,11 @@ Route::middleware('auth:admin')->prefix('officers')->group(function () {
     Route::post('/{id}/activate', [OfficerController::class,'activate']); 
     Route::post('/{id}/deactivate', [OfficerController::class,'deactivate']);
 });
+// ----------------- Officer Auth Routes -----------------
+Route::prefix('officer')->group(function() {
+    Route::post('login', [OfficerController::class, 'login']);
+    Route::post('logout', [OfficerController::class, 'logout'])->middleware('auth:officer');
+});
 
 // ----------------- Visitor Routes -----------------
 Route::middleware(['auth:admin','auth:officer'])->group(function () {

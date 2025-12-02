@@ -1,15 +1,20 @@
 <?php
 namespace App\Models;
-use Illuminate\Database\Eloquent\Model;
 
-class Officer extends Model
+use Illuminate\Foundation\Auth\User as Authenticatable;
+class Officer extends Authenticatable
 {
     protected $fillable = [
         'name',
+        'email',
+        'password',
         'post_id',
         'status',
         'WorkStartTime',
         'WorkEndTime',
+    ];
+    protected $hidden = [
+        'password',
     ];
     public function post(){
         return $this->belongsTo(Post::class);

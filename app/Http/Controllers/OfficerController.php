@@ -3,12 +3,34 @@
 namespace App\Http\Controllers;
 use App\Models\Officer;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class OfficerController extends Controller
 {
     public function index(){
         return Officer::all();
     }
+    public function login(Request $request){
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+    
+        if (Auth::guard('officer')->attempt($credentials)) {
+            $officer = Auth::guard('officer')->user();
+            return response()->json([
+                'message' => 'Login successful',
+                'officer' => $officer
+            ], 200);
+        } else {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+    }
+    
+    public function logout(Request $request){
+        Auth::guard('officer')->logout();
+        return response()->json(['message' => 'Logout successful'], 200);
+    }
+    
     public function store(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:255',
