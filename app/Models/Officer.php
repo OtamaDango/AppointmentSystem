@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 class Officer extends Authenticatable
 {
+    protected $primaryKey = 'officer_id';
     protected $fillable = [
         'name',
         'email',
@@ -17,16 +18,16 @@ class Officer extends Authenticatable
         'password',
     ];
     public function post(){
-        return $this->belongsTo(Post::class);
+        return $this->belongsTo(Post::class,'post_id','post_id');
     }
     public function appointments(){
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class,'officer_id','officer_id');
     }
     public function activities(){
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(Activity::class,'officer_id','officer_id');
     }
     public function workDays(){
-        return $this->hasMany(WorkDays::class);
+        return $this->hasMany(WorkDays::class,'officer_id','officer_id');
     }
 
     public function activate(){

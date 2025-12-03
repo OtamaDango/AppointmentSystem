@@ -4,10 +4,21 @@ namespace App\Http\Controllers;
 use App\Models\Officer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Post;
 class OfficerController extends Controller
 {
     public function index(){
-        return Officer::all();
+        $officers = Officer::all();
+        return view('officers.index', compact('officers'));
+    }
+    public function create() {
+        $posts = Post::all();
+        return view('officers.create', compact('posts'));
+    }
+    public function edit($id){
+        $officer = Officer::findOrFail($id);
+        $posts = Post::all();
+        return view('officers.edit', compact('officer','posts'));
     }
     public function login(Request $request){
         $credentials = $request->validate([
@@ -34,9 +45,9 @@ class OfficerController extends Controller
     public function store(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'post_id' => 'required|exists:posts,id',
-            'work_start_time' => 'required|date_format:H:i',
-            'work_end_time' => 'required|date_format:H:i|after:work_start_time',
+            'post_id' => 'required|exists:posts,post_id',
+            'WorkStartTime' => 'required|date_format:H:i',
+            'WorkEndTime' => 'required|date_format:H:i|after:WorkStartTime',
             'workdays' => 'required|array|min:1',
             'workdays.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
         ]);
@@ -44,8 +55,8 @@ class OfficerController extends Controller
         $officer = Officer::create([
             'name' => $validated['name'],
             'post_id' => $validated['post_id'],
-            'work_start_time' => $validated['work_start_time'],
-            'work_end_time' => $validated['work_end_time'],
+            'WorkStartTime' => $validated['WorkStartTime'],
+            'WorkEndTime' => $validated['WorkEndTime'],
             'status' => 'Active',
         ]);
 
@@ -55,45 +66,46 @@ class OfficerController extends Controller
             ]);
         }
 
-        return response()->json([
-            'message' => 'Officer created successfully',
-            'officer' => $officer], 201);
+        return redirect()->route('officers.index')->with('success', 'Officer created successfully');
     }
     public function update(Request $request,$id){
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'post_id' => 'required|exists:posts,id',
-            'work_start_time' => 'required|date_format:H:i',
-            'work_end_time' => 'required|date_format:H:i|after:work_start_time',
+            'post_id' => 'required|exists:posts,post_id',
+            'WorkStartTime' => 'required|date_format:H:i',
+            'WorkEndTime' => 'required|date_format:H:i|after:WorkStartTime',
             'workdays' => 'required|array|min:1',
             'workdays.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
         ]);
-
+    
         $officer = Officer::findOrFail($id);
         $officer->name = $validated['name'];
         $officer->post_id = $validated['post_id'];
-        $officer->work_start_time = $validated['work_start_time'];
-        $officer->work_end_time = $validated['work_end_time'];
+        $officer->WorkStartTime = $validated['WorkStartTime'];
+        $officer->WorkEndTime = $validated['WorkEndTime'];
         $officer->save();
-
+    
+        // Update workdays
         $officer->workDays()->delete();
-        foreach($validated['workdays']as $day){
+        foreach($validated['workdays'] as $day){
             $officer->workDays()->create([
                 'day_of_week' => $day,
             ]);
         }
-        //deactivate activities that fall outside new schedule
+    
+        // Deactivate activities outside new schedule
+        $startTime = $validated['WorkStartTime'] . ':00';
+        $endTime   = $validated['WorkEndTime'] . ':00';
+    
         $officer->activities()
-            ->where('date','>=',now())
-            ->where(function($query) use ($validated){
-                $query->whereTime('start_time','<',$validated['work_start_time'])
-                      ->orWhereTime('end_time','>',$validated['work_end_time']);
+            ->where('start_date','>=',now())
+            ->where(function($query) use ($startTime, $endTime){
+                $query->whereTime('start_time','<',$startTime)
+                      ->orWhereTime('end_time','>',$endTime);
             })
             ->update(['status' => 'Deactivated']);
-
-        return response()->json([
-            'message' => 'Officer updated successfully',
-            'officer' => $officer], 200);
+    
+        return redirect()->route('officers.index')->with('success', 'Officer updated successfully');
     }
     public function activate($id){
         $officer = Officer::findOrFail($id);
@@ -104,17 +116,19 @@ class OfficerController extends Controller
         $officer->status = 'Active';
         $officer->save();
         //reactivate future activities if visitor is active
-        $officer->activities()
+        $activities = $officer->activities()
             ->where('status','Deactivated')
-            ->where('date','>=', now())
-            ->whereHas('appointment.visitor', function($query){
-                $query->where('status','Active');
-            })
-            ->update(['status' => 'Active']);
+            ->where('start_date','>=', now())
+            ->get();
 
-        return response()->json([
-            'message' => 'Officer activated successfully',
-            'officer' => $officer],200);
+        foreach($activities as $activity){
+            if($activity->appointment && $activity->appointment->visitor && $activity->appointment->visitor->status === 'Active'){
+            $activity->update(['status' => 'Active']);
+        }
+}
+
+    
+        return redirect()->route('officers.index')->with('success', 'Officer activated successfully');
     }
     public function deactivate($id){
         $officer = Officer::findOrFail($id);
@@ -123,12 +137,10 @@ class OfficerController extends Controller
         //deactivate future activities
         $officer->activities()
             ->where('status','Active')
-            ->where('date','>=',now())
+            ->where('start_date','>=',now())
             ->update(['status' => 'Deactivated']);
         
-        return response()->json([
-            'message' => 'Officer deactivated successfully',
-            'officer' => $officer],200);
+        return redirect()->route('officers.index')->with('success', 'Officer deactivated successfully');
     }
 }
 ?>

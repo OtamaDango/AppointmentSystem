@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
+    protected $primaryKey = 'activity_id';  
     protected $fillable = [
         'type',
         'officer_id',

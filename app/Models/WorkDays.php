@@ -10,7 +10,7 @@ class WorkDays extends Model
         'day_of_week',
     ];
     public function officer(){
-        return $this->belongsTo(Officer::class);
+        return $this->belongsTo(Officer::class,'officer_id','officer_id');
     }
 }
 ?>

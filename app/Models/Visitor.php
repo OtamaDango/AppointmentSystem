@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\App;
 
 class Visitor extends Model
 {
+    protected $primaryKey = 'visitor_id';
     protected $fillable = [
         'name',
         'mobileno',
@@ -12,7 +13,7 @@ class Visitor extends Model
         'status',
     ];
     public function appointments(){
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class,'visitor_id','visitor_id');
     }
     public function activate(){
         $this->status = 'Active';

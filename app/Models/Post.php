@@ -4,12 +4,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
+    protected $primaryKey = 'post_id';
     protected $fillable = [
         'name',
         'status',
     ];
     public function officers(){
-        return $this->hasMany(Officer::class);
+        return $this->hasMany(Officer::class,'post_id','post_id');
     }
     public function activate(){
         $this->status = 'Active';

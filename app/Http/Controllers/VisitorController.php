@@ -7,7 +7,15 @@ use Illuminate\Http\Request;
 class VisitorController extends Controller
 {
     public function index(){
-        return Visitor::all();
+        $visitors = Visitor::all();
+        return view('visitors.index', compact('visitors'));
+    }
+    public function create() {
+        return view('visitors.create');
+    }
+    public function edit($id){
+        $visitor = Visitor::findOrFail($id);
+        return view('visitors.edit', compact('visitor'));
     }
     public function store(Request $request){
         $validated = $request->validate([
@@ -23,9 +31,7 @@ class VisitorController extends Controller
             'status' => 'Active',
         ]);
 
-        return response()->json([
-            'message' => 'Visitor created successfully',
-            'visitor' => $visitor], 201);
+        return redirect()->route('visitors.index')->with('success', 'Visitor created successfully');
     }
     public function update(Request $request,$id){
         $validated = $request->validate([
@@ -40,9 +46,7 @@ class VisitorController extends Controller
         $visitor->email = $validated['email'];
         $visitor->save();
 
-        return response()->json([
-            'message' => 'Visitor updated successfully',
-            'visitor' => $visitor], 200);
+        return redirect()->route('visitors.index')->with('success', 'Visitor updated successfully');
     }
     public function activate($id){
         $visitor = Visitor::findOrFail($id);
@@ -58,9 +62,7 @@ class VisitorController extends Controller
             ->update(['status' => 'Active']);
 
         
-        return response()->json([
-            'message' => 'Visitor activated successfully',
-            'visitor' => $visitor], 200);
+        return redirect()->route('visitors.index')->with('success', 'Visitor activated successfully');
     }
     public function deactivate($id){
         $visitor = Visitor::findOrFail($id);
@@ -72,16 +74,12 @@ class VisitorController extends Controller
             ->where('date','>=',now())
             ->update(['status' => 'Deactivated']);
 
-        return response()->json([
-            'message' => 'Visitor deactivated successfully',
-            'visitor' => $visitor], 200);
+        return redirect()->route('visitors.index')->with('success', 'Visitor deactivated successfully');
     }
     public function viewAppointments($id){
         $visitor = Visitor::findOrFail($id);
         $appointments = $visitor->appointments;
-        return response()->json([
-            'visitor' => $visitor,
-            'appointments' => $appointments], 200);
+        return view('visitors.appointments', compact('visitor', 'appointments'));
     }
 }
 ?>

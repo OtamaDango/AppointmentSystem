@@ -4,6 +4,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    protected $primaryKey = 'appointment_id';
+    public $incrementing = true;
     protected $fillable = [
         'officer_id',
         'visitor_id',
@@ -18,7 +20,7 @@ class Appointment extends Model
         return $this->belongsTo(Officer::class,'officer_id','officer_id');
     }
     public function visitor(){
-        return $this->belongsTo(Visitor::class,'visitor_id','officer_id');
+        return $this->belongsTo(Visitor::class,'visitor_id','visitor_id');
     }
     public function activities(){
         return $this->hasOne(Activity::class,'appointment_id','appointment_id');

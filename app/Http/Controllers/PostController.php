@@ -7,7 +7,15 @@
     class PostController extends Controller
     {
         public function index(){
-            return Post::all();
+            $posts = Post::all();
+            return view('posts.index', compact('posts'));
+        }
+        public function create() {
+            return view('posts.create');
+        }
+        public function edit($id){
+            $post = Post::findOrFail($id);
+            return view('posts.edit', compact('post'));
         }
         public function store(Request $request){
             $validated = $request->validate([
@@ -17,26 +25,19 @@
                 'name' => $validated['name'],
                 'status' => 'Active',
             ]);
-            return response()->json([
-                'message' => 'Post created successfully',
-                'post' => $post], 201);
-
+            return redirect()->route('posts.index')->with('success', 'Post created successfully');
         }
         public function update(Request $request,$id){
             $post = Post::findOrFail($id);
             $post->name = $request->name;
             $post->save();
-            return response()->json([
-                'message' => 'Post updated successfully',
-                'post' => $post], 200);
+            return redirect()->route('posts.index')->with('success', 'Post updated successfully');
         }
         public function activate($id){
             $post = Post::findOrFail($id);
             $post->status = 'Active';
             $post->save();
-            return response()->json([
-                'message' => 'Post activated successfully',
-                'post' => $post], 200);
+            return redirect()->route('posts.index')->with('success', 'Post activated successfully');
         }
         public function deactivate($id){
             $post = Post::findOrFail($id);
@@ -46,9 +47,7 @@
             }
             $post->status = 'Inactive';
             $post->save();
-            return response()->json([
-                'message' => 'Post deactivated successfully',
-                'post' => $post], 200);
+            return redirect()->route('posts.index')->with('success', 'Post deactivated successfully');
         }
     }
     ?>
