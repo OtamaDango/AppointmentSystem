@@ -2,7 +2,7 @@
 
 @section('content')
 <h2>Activities</h2>
-
+<a href="{{ route('activities.create') }}">Add Activity</a>
 <!-- Filters -->
 <form method="GET" action="{{ route('activities.index') }}">
     <label>Type:</label>
@@ -87,7 +87,7 @@
             <td>{{ $activity->type }}</td>
             <td>{{ $activity->start_date }} {{ $activity->start_time }}</td>
             <td>{{ $activity->end_date }} {{ $activity->end_time }}</td>
-            <td>{{ $statusDisplay }}</td>
+            <td>{{ $activity->display_status }}</td>
             <td>
                 @if($activity->appointment)
                     {{ $activity->appointment->appointment_id }}
@@ -96,9 +96,6 @@
                 @endif
             </td>
             <td>
-                @if($activity->type != 'Appointment')
-                    <a href="{{ route('activities.edit', $activity->activity_id) }}">Edit</a>
-                @endif
                 <a href="{{ route('activities.show', $activity->activity_id) }}">View</a>
             </td>
         </tr>

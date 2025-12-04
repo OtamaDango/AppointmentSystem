@@ -24,20 +24,6 @@ class ActivityController extends Controller
         $activity = Activity::with(['officer', 'appointment', 'appointment.visitor'])->findOrFail($id);
         return view('activities.show', compact('activity'));
     }
-
-    // Show edit form
-    public function edit($id)
-    {
-        $activity = Activity::findOrFail($id);
-
-        // Appointment type activities cannot be edited manually
-        if ($activity->type === 'Appointment') {
-            return redirect()->back()->with('error', 'Appointment activities cannot be updated manually.');
-        }
-
-        return view('activities.edit', compact('activity'));
-    }
-
     // List all activities with optional filters
     public function index(Request $request)
     {
@@ -151,67 +137,4 @@ class ActivityController extends Controller
 
         return redirect()->route('activities.index')->with('success', 'Activity created successfully.');
     }
-
-    // Update an existing activity (Leave/Break only)
-    public function update(Request $request, $id)
-    {
-        $activity = Activity::findOrFail($id);
-    
-        if ($activity->type === 'Appointment') {
-            return back()->with('error', 'Appointment activities cannot be updated manually.');
-        }
-    
-        $validated = $request->validate([
-            'type' => 'required|string|in:Leave,Break',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-        ]);
-    
-        $officer = $activity->officer;
-    
-        if ($officer->status !== 'Active') {
-            return back()->with('error', 'Cannot update. Officer is inactive.');
-        }
-    
-        // Workday check
-        $dayOfWeek = Carbon::parse($validated['start_date'])->format('D');
-        $officerWorkDays = $officer->workDays->pluck('day_of_week')->toArray();
-    
-        if (!in_array($dayOfWeek, $officerWorkDays)) {
-            return back()->with('error', 'Activity date is outside officer workdays.');
-        }
-    
-        // Working hours check
-        $workStart = Carbon::parse($officer->WorkStartTime);
-        $workEnd = Carbon::parse($officer->WorkEndTime);
-        $activityStart = Carbon::parse($validated['start_time']);
-        $activityEnd = Carbon::parse($validated['end_time']);
-    
-        if ($activityStart < $workStart || $activityEnd > $workEnd) {
-            return back()->with('error', 'Activity time is outside working hours.');
-        }
-    
-        // Conflict check
-        $conflict = $officer->activities()
-            ->where('activity_id', '!=', $activity->activity_id)
-            ->where('status', 'Active')
-            ->where(function ($q) use ($validated) {
-                $q->where('start_date', '<=', $validated['end_date'])
-                  ->where('end_date', '>=', $validated['start_date'])
-                  ->where('start_time', '<', $validated['end_time'])
-                  ->where('end_time', '>', $validated['start_time']);
-            })
-            ->exists();
-    
-        if ($conflict) {
-            return back()->with('error', 'Time conflict with existing activity.');
-        }
-    
-        $activity->update($validated);
-    
-        return redirect()->route('activities.index')->with('success', 'Activity updated successfully.');
-    }
-    
 }

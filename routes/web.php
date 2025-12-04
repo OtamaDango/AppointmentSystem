@@ -50,21 +50,12 @@ Route::prefix('appointments')->group(function () {
 // ----------------- Activity Routes -----------------
 Route::prefix('activities')->group(function () {
     Route::get('/', [ActivityController::class, 'index'])->name('activities.index');
-    Route::get('/{id}', [ActivityController::class, 'show'])->name('activities.show');
-    Route::get('/{id}/edit', [ActivityController::class, 'edit'])->name('activities.edit');  
     Route::get('/create', [ActivityController::class, 'create'])->name('activities.create');
     Route::post('/', [ActivityController::class, 'store'])->name('activities.store');
-    // ----------------- Activity Routes -----------------
-// ----------------- Activity Routes -----------------
-Route::prefix('activities')->group(function () {
-    Route::get('/', [ActivityController::class, 'index'])->name('activities.index');
-    Route::get('/{id}', [ActivityController::class, 'show'])->name('activities.show');
-    Route::get('/{id}/edit', [ActivityController::class, 'edit'])->name('activities.edit');  
-    Route::get('/create', [ActivityController::class, 'create'])->name('activities.create');
-    Route::post('/', [ActivityController::class, 'store'])->name('activities.store');
+    Route::get('/{id}', [ActivityController::class, 'show'])->name('activities.show'); 
     Route::put('/{id}', [ActivityController::class, 'update'])->name('activities.update'); 
 });
-});
+
 
 // ----------------- Post Routes -----------------
 Route::prefix('posts')->group(function () {

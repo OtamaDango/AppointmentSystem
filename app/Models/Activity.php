@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Testing\Fluent\Concerns\Has;
-
+use Illuminate\Support\Carbon;
 class Activity extends Model
 {
     use HasFactory;
@@ -24,6 +24,19 @@ class Activity extends Model
     }
     public function appointment(){
         return $this->belongsTo(Appointment::class,'appointment_id','appointment_id');
+    }
+    public function getDisplayStatusAttribute()
+    {
+        $end = Carbon::parse($this->end_date . ' ' . $this->end_time);
+
+        if ($end->isPast() && $this->status === 'Active') {
+            return 'Completed';
+        }
+
+        if ($end->isPast() && ($this->status === 'Deactivated' || $this->status === 'Cancelled')) {
+            return 'Cancelled';
+        }
+        return $this->status;
     }
 }
 ?>
