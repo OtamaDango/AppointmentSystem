@@ -27,6 +27,19 @@
    ```bash
    php artisan serve
    ```
+## Populate Sample Data
+
+1. seed the database
+- After setting up the project, you can populate the database with sample data for testing:
+    ```bash
+    php artisan db:seed
+    ```
+2. Optional: Reset database and seed from scratch
+- This drops all tables, re-runs migrations, and seeds fresh sample data.
+   ```bash
+   php artisan migrate:fresh --seed
+    ```
+
 ## Database Schema
 
 ### Posts
