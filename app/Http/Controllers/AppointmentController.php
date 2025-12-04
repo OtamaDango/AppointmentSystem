@@ -39,13 +39,13 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'officer_id' => 'required|exists:officers,officer_id',
-            'visitor_id' => 'required|exists:visitors,visitor_id',
-            'name' => 'required|string|max:255',
-            'date' => 'required|date|after_or_equal:today',
-            'StartTime' => 'required|date_format:H:i',
-            'EndTime' => 'required|date_format:H:i|after:StartTime',
-        ]);
+        'officer_id' => 'required|exists:officers,officer_id',
+        'visitor_id' => 'required|exists:visitors,visitor_id',
+        'name' => 'required|string|max:255',
+        'date' => 'required|date|after_or_equal:today',
+        'StartTime' => 'required|date_format:H:i',
+        'EndTime' => 'required|date_format:H:i|after:StartTime',
+    ]);
 
         $officer = Officer::findOrFail($validated['officer_id']);
         $visitor = Visitor::findOrFail($validated['visitor_id']);
@@ -75,20 +75,20 @@ class AppointmentController extends Controller
             return redirect()->back()->with('error', 'Time is outside officer working hours.');
         }
 
-        // Cancel any deactivated overlapping activity
-        $deactivatedActivity = $officer->activities()
+        // Cancel all overlapping deactivated activities
+        $deactivatedActivities = $officer->activities()
             ->where('status', 'Deactivated')
             ->where('start_date', $validated['date'])
             ->where('start_time', '<', $validated['EndTime'])
             ->where('end_time', '>', $validated['StartTime'])
-            ->first();
+            ->get();
 
-        if ($deactivatedActivity) {
-            $deactivatedActivity->status = 'Cancelled';
-            $deactivatedActivity->save();
+        foreach ($deactivatedActivities as $activity) {
+            $activity->status = 'Cancelled';
+            $activity->save();
         }
 
-        // Check for officer conflicting activities (Active only)
+        // Check for officer conflicting active activities
         $conflict = $officer->activities()
             ->where('status', 'Active')
             ->where('start_date', $validated['date'])
@@ -99,7 +99,7 @@ class AppointmentController extends Controller
             return redirect()->back()->with('error', 'Officer has a conflicting activity.');
         }
 
-        // Check for visitor conflicting appointments
+        // Check for visitor conflicting active appointments
         $visitorConflict = $visitor->appointments()
             ->where('status', 'Active')
             ->where('date', $validated['date'])
@@ -135,7 +135,7 @@ class AppointmentController extends Controller
         ]);
 
         return redirect()->route('appointments.index')->with('success', 'Appointment created successfully.');
-    }
+    }  
 
     // Update an existing appointment
     public function update(Request $request, $id)
@@ -221,16 +221,17 @@ class AppointmentController extends Controller
     public function cancel($id)
     {
         $appointment = Appointment::findOrFail($id);
-        $appointment->status = 'Cancelled';
-        $appointment->save();
 
-        // Cancel linked activity
-        if ($appointment->activity) {
-            $appointment->activity->update(['status' => 'Cancelled']);
-        }
+        // Update appointment
+        $appointment->update(['status' => 'Cancelled']);
+
+        // Cancel the linked activity (Appointment activity)
+        Activity::where('appointment_id', $appointment->appointment_id)
+            ->update(['status' => 'Cancelled']);
 
         return redirect()->route('appointments.index')->with('success', 'Appointment cancelled successfully.');
     }
+
 
     // Show a single appointment with related officer, visitor, and activity
     public function show($id)

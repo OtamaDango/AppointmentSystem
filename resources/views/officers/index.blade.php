@@ -1,9 +1,6 @@
 @extends('layout.app')
 
 @section('content')
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
 
 <h2>Officers</h2>
 <a href="{{ route('officers.create') }}" style="margin-bottom:10px; display:inline-block;">Add Officer</a>

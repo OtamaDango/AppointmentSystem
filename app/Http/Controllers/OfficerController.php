@@ -20,28 +20,6 @@ class OfficerController extends Controller
         $posts = Post::all();
         return view('officers.edit', compact('officer','posts'));
     }
-    public function login(Request $request){
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-    
-        if (Auth::guard('officer')->attempt($credentials)) {
-            $officer = Auth::guard('officer')->user();
-            return response()->json([
-                'message' => 'Login successful',
-                'officer' => $officer
-            ], 200);
-        } else {
-            return response()->json(['error' => 'Invalid credentials'], 401);
-        }
-    }
-    
-    public function logout(Request $request){
-        Auth::guard('officer')->logout();
-        return response()->json(['message' => 'Logout successful'], 200);
-    }
-    
     public function store(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -111,7 +89,7 @@ class OfficerController extends Controller
         $officer = Officer::findOrFail($id);
         // check if post is active
         if($officer->post->status !== 'Active'){
-            return response()->json(['error' => 'Cannot activate officer with inactive post'], 400);
+            return redirect()->back()->with('error', 'Cannot activate officer. Assigned post is inactive.');
         }
         $officer->status = 'Active';
         $officer->save();

@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Officer;
-use App\Models\Appointment;
+use App\Models\Visitor;
 use Carbon\Carbon;
+use App\Models\Appointment;
 use Illuminate\Http\Request;
 
 class ActivityController extends Controller
@@ -74,7 +75,9 @@ class ActivityController extends Controller
             $query->whereBetween('start_time', [$request->start_time, $request->end_time]);
         }
 
-        $activities = $query->orderBy('start_date', 'desc')->get();
+        $officers = Officer::all();
+        $visitors = Visitor::all();
+        $activities = $query->get();
 
         // Auto-update past activities
         foreach ($activities as $activity) {
@@ -91,7 +94,7 @@ class ActivityController extends Controller
             }
         }
 
-        return view('activities.index', compact('activities'));
+        return view('activities.index', compact('activities', 'officers', 'visitors'));
     }
 
     // Store new activity
@@ -110,14 +113,14 @@ class ActivityController extends Controller
 
         // Officer must be active
         if ($officer->status !== 'Active') {
-            return response()->json(['error' => 'Officer is inactive'], 400);
+            return redirect()->back()->with('error', 'Officer is inactive.');
         }
 
         // Check if activity falls within officer's workdays
         $dayOfWeek = Carbon::parse($validated['start_date'])->format('D');
         $officerWorkDays = $officer->workDays->pluck('day_of_week')->toArray();
         if (!in_array($dayOfWeek, $officerWorkDays)) {
-            return response()->json(['error' => 'Activity date is outside officer workdays'], 400);
+            return redirect()->back()->with('error', 'Activity date is outside officer workdays.');
         }
 
         // Check if activity falls within officer's working hours
@@ -126,7 +129,7 @@ class ActivityController extends Controller
         $activityStart = Carbon::parse($validated['start_time']);
         $activityEnd = Carbon::parse($validated['end_time']);
         if ($activityStart < $workStart || $activityEnd > $workEnd) {
-            return response()->json(['error' => 'Activity time is outside officer working hours'], 400);
+            return redirect()->back()->with('error', 'Activity time is outside working hours.');
         }
 
         // Check for conflicting activities
@@ -141,15 +144,12 @@ class ActivityController extends Controller
             ->exists();
 
         if ($conflict) {
-            return response()->json(['error' => 'Officer has conflicting activity'], 400);
+            return redirect()->back()->with('error', 'Time conflict with existing activity.');
         }
 
         $activity = Activity::create($validated);
 
-        return response()->json([
-            'message' => 'Activity created successfully',
-            'activity' => $activity
-        ], 201);
+        return redirect()->route('activities.index')->with('success', 'Activity created successfully.');
     }
 
     // Update an existing activity (Leave/Break only)

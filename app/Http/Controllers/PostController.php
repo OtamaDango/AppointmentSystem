@@ -43,7 +43,7 @@
             $post = Post::findOrFail($id);
             // cannot deactivate if active officer exists
             if($post->officers()->where('status','Active')->count() > 0){
-                return response()->json(['error' => 'cannot deactivate post with active officers'], 400);
+                return redirect()->back()->with('error', 'Cannot deactivate post with active officers.');
             }
             $post->status = 'Inactive';
             $post->save();

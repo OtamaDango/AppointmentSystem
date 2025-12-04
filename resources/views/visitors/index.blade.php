@@ -1,9 +1,6 @@
 @extends('layout.app')
 
 @section('content')
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
 
 <h2>Visitors</h2>
 <a href="{{ route('visitors.create') }}">Add Visitor</a>

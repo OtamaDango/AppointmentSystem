@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 class Officer extends Authenticatable
 {
+    use HasFactory;
     protected $primaryKey = 'officer_id';
     protected $fillable = [
         'name',

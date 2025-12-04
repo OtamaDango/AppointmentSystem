@@ -22,11 +22,43 @@
         <option value="Cancelled" {{ request('status')=='Cancelled' ? 'selected' : '' }}>Cancelled</option>
     </select>
 
+    <label>Officer:</label>
+    <select name="officer_id">
+        <option value="">All</option>
+        @foreach($officers as $officer)
+            <option value="{{ $officer->officer_id }}" {{ request('officer_id') == $officer->officer_id ? 'selected' : '' }}>
+                {{ $officer->name }}
+            </option>
+        @endforeach
+    </select>
+
+    <label>Visitor:</label>
+    <select name="visitor_id">
+        <option value="">All</option>
+        @foreach($visitors as $visitor)
+            <option value="{{ $visitor->visitor_id }}" {{ request('visitor_id') == $visitor->visitor_id ? 'selected' : '' }}>
+                {{ $visitor->name }}
+            </option>
+        @endforeach
+    </select>
+    <br>
+    <label>Start Date:</label>
+    <input type="date" name="start_date" value="{{ request('start_date') }}">
+
+    <label>End Date:</label>
+    <input type="date" name="end_date" value="{{ request('end_date') }}">
+
+    <label>Start Time:</label>
+    <input type="time" name="start_time" value="{{ request('start_time') }}">
+
+    <label>End Time:</label>
+    <input type="time" name="end_time" value="{{ request('end_time') }}">
+
     <button type="submit">Filter</button>
 </form>
 
 <!-- Activities Table -->
-<table border="1" cellpadding="5" cellspacing="0">
+<table border="1" cellspacing="0" cellpadding="2">
     <thead>
         <tr>
             <th>ID</th>
@@ -41,16 +73,24 @@
     </thead>
     <tbody>
         @foreach($activities as $activity)
+        @php
+            $endDateTime = \Carbon\Carbon::parse($activity->end_date . ' ' . $activity->end_time);
+            $statusDisplay = $activity->status;
+
+            if ($endDateTime->lt(now())) {
+                $statusDisplay = $activity->status == 'Active' ? 'Completed' : 'Cancelled';
+            }
+        @endphp
         <tr>
             <td>{{ $activity->activity_id }}</td>
             <td>{{ $activity->officer->name }}</td>
             <td>{{ $activity->type }}</td>
             <td>{{ $activity->start_date }} {{ $activity->start_time }}</td>
             <td>{{ $activity->end_date }} {{ $activity->end_time }}</td>
-            <td>{{ $activity->status }}</td>
+            <td>{{ $statusDisplay }}</td>
             <td>
                 @if($activity->appointment)
-                    {{ $activity->appointment->name }}
+                    {{ $activity->appointment->appointment_id }}
                 @else
                     -
                 @endif
